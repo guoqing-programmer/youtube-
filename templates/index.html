@@ -5,77 +5,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Video Downloader</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 添加 Font Awesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'bounce-slow': 'bounce 3s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .progress-animation {
+            transition: width 0.3s ease-in-out;
+        }
+        
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        
+        .loading-wave {
+            animation: wave 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes wave {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
+<body class="p-4">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- 标题部分 -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">YouTube Video Downloader</h1>
-            <p class="text-gray-600">Enter a YouTube URL to download videos easily</p>
+        <div class="text-center mb-12">
+            <div class="flex justify-center mb-4">
+                <i class="fab fa-youtube text-6xl text-white animate-bounce-slow"></i>
+            </div>
+            <h1 class="text-5xl font-bold text-white mb-4 tracking-tight">
+                YouTube Downloader
+            </h1>
+            <p class="text-xl text-white/80">Download your favorite videos with ease</p>
         </div>
 
         <!-- 下载表单 -->
-        <div class="max-w-xl mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
-            <div class="flex gap-2">
-                <input type="text" 
-                       id="url-input"
-                       placeholder="Enter YouTube URL" 
-                       class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+        <div class="max-w-xl mx-auto glass-effect rounded-2xl shadow-2xl p-8 mb-12 hover-scale">
+            <div class="flex gap-3">
+                <div class="relative flex-1">
+                    <i class="fas fa-link absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" 
+                           id="url-input"
+                           placeholder="Paste YouTube URL here" 
+                           class="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-transparent focus:border-purple-500 focus:outline-none transition-all duration-300">
+                </div>
                 <button onclick="downloadVideo()" 
-                        class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                        id="download-btn">
-                    Download
+                        id="download-btn"
+                        class="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white rounded-xl flex items-center gap-2 transition-all duration-300 hover:shadow-lg">
+                    <i class="fas fa-download"></i>
+                    <span>Download</span>
                 </button>
             </div>
-            <div id="status" class="mt-4 text-center text-gray-600 hidden"></div>
+            
+            <!-- 下载状态 -->
+            <div id="status" class="mt-6 text-center hidden">
+                <p id="status-text" class="mb-3 text-gray-700 font-medium"></p>
+                <div class="relative pt-1">
+                    <div class="w-full bg-gray-200 rounded-full h-3" id="progress-bar">
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full progress-animation" 
+                             id="progress-fill" 
+                             style="width: 0%">
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-2 text-sm text-gray-600">
+                        <p id="download-speed"></p>
+                        <p id="download-eta"></p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 视频列表 -->
-        <div class="grid gap-6" id="video-list">
+        <div class="grid gap-6 md:grid-cols-2" id="video-list">
             {% if videos %}
                 {% for video in videos %}
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <div class="flex gap-4">
-                        <div class="w-64">
-                            <video controls class="w-full rounded" preload="metadata">
-                                <source src="{{ video.path }}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
+                <div class="glass-effect rounded-2xl shadow-xl p-6 hover-scale">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-64">
+                            <div class="relative rounded-xl overflow-hidden shadow-lg">
+                                <video controls class="w-full" preload="metadata">
+                                    <source src="{{ video.path }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
                         </div>
                         <div class="flex-1">
-                            <h3 class="text-xl font-semibold mb-2">{{ video.title }}</h3>
-                            <p class="text-gray-600 mb-1">Duration: {{ video.duration }}</p>
-                            <p class="text-gray-600 mb-1">Author: {{ video.author }}</p>
-                            <p class="text-gray-600 mb-1">Size: {{ video.size }}</p>
-                            <p class="text-gray-600 mb-1">Path: {{ video.path }}</p>
-                            <p class="text-gray-600">{{ video.description }}</p>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800">{{ video.title }}</h3>
+                            <div class="space-y-2">
+                                <p class="text-gray-600">
+                                    <i class="far fa-clock mr-2"></i>
+                                    Duration: {{ video.duration }}
+                                </p>
+                                <p class="text-gray-600">
+                                    <i class="fas fa-file-alt mr-2"></i>
+                                    Size: {{ video.file_size }}
+                                </p>
+                                <p class="text-gray-600">
+                                    <i class="far fa-calendar-alt mr-2"></i>
+                                    Downloaded: {{ video.download_time }}
+                                </p>
+                                <p class="text-gray-600 truncate">
+                                    <i class="fas fa-folder mr-2"></i>
+                                    {{ video.file_path }}
+                                </p>
+                                <button onclick="openFolder('{{ video.folder_path }}')"
+                                        class="mt-4 px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center gap-2">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    Open Folder
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
+            {% else %}
+                <div class="col-span-2 text-center py-12">
+                    <i class="fas fa-cloud-download-alt text-6xl text-white/50 mb-4"></i>
+                    <p class="text-xl text-white/70">No downloads yet. Start by pasting a YouTube URL above!</p>
+                </div>
             {% endif %}
         </div>
     </div>
 
     <script>
+        async function openFolder(path) {
+            try {
+                const response = await fetch('/open-folder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ path: path })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to open folder');
+                }
+            } catch (error) {
+                console.error('Error opening folder:', error);
+                alert('Failed to open folder: ' + error.message);
+            }
+        }
+
         async function downloadVideo() {
             const urlInput = document.getElementById('url-input');
             const downloadBtn = document.getElementById('download-btn');
             const status = document.getElementById('status');
+            const statusText = document.getElementById('status-text');
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            const downloadSpeed = document.getElementById('download-speed');
+            const downloadEta = document.getElementById('download-eta');
             
             if (!urlInput.value) {
                 alert('Please enter a YouTube URL');
                 return;
             }
             
-            // 禁用按钮和显示状态
             downloadBtn.disabled = true;
             status.classList.remove('hidden');
-            status.textContent = 'Starting download...';
+            statusText.textContent = 'Starting download...';
+            progressBar.classList.add('hidden');
             
             try {
-                console.log('Sending request for URL:', urlInput.value);
-                
                 const response = await fetch('/download', {
                     method: 'POST',
                     headers: {
@@ -86,37 +208,49 @@
                     })
                 });
                 
-                console.log('Received response:', response);
                 const data = await response.json();
-                console.log('Response data:', data);
                 
                 if (!response.ok) {
                     throw new Error(data.message || 'Download failed');
                 }
                 
-                status.textContent = `Downloading: ${data.title}...`;
+                statusText.textContent = `Downloading: ${data.title}...`;
+                progressBar.classList.remove('hidden');
                 
-                // 定期检查视频列表更新
-                const checkInterval = setInterval(async () => {
+                // 开始进度检查
+                const progressInterval = setInterval(async () => {
                     try {
-                        const videosResponse = await fetch('/videos');
-                        const videosData = await videosResponse.json();
+                        const progressResponse = await fetch(`/progress/${data.download_id}`);
+                        const progressData = await progressResponse.json();
                         
-                        // 如果视频列表有更新，刷新页面
-                        if (videosData.videos.length > document.querySelectorAll('#video-list > div').length) {
+                        progressFill.style.width = `${progressData.progress}%`;
+                        downloadSpeed.textContent = `Speed: ${progressData.speed}`;
+                        downloadEta.textContent = `ETA: ${progressData.eta}`;
+                        
+                        if (progressData.status === 'completed') {
+                            clearInterval(progressInterval);
+                            statusText.textContent = 'Download completed!';
                             window.location.reload();
-                            clearInterval(checkInterval);
+                        } else if (progressData.status === 'error') {
+                            clearInterval(progressInterval);
+                            throw new Error(progressData.error || 'Download failed');
                         }
                     } catch (error) {
-                        console.error('Error checking video status:', error);
-                        clearInterval(checkInterval);
+                        console.error('Error checking progress:', error);
+                        clearInterval(progressInterval);
+                        throw error;
                     }
-                }, 2000);
+                }, 1000);
                 
             } catch (error) {
                 console.error('Download error:', error);
-                status.textContent = 'Error: ' + error.message;
+                statusText.textContent = 'Error: ' + error.message;
+                progressBar.classList.add('hidden');
+                downloadSpeed.textContent = '';
+                downloadEta.textContent = '';
+            } finally {
                 downloadBtn.disabled = false;
+                urlInput.value = '';
             }
         }
     </script>
